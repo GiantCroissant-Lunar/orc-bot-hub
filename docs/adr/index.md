@@ -15,9 +15,11 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0010: Orca is scaffolding, and is retired plane by plane](0010-orca-is-scaffolding-not-a-dependency.md)
 - [ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client](0011-one-orc-binary-client-and-daemon.md) — superseded by 0012
 - [ADR-0012: The product is one exported Godot binary; headless is the daemon](0012-the-product-is-one-exported-godot-binary.md)
-- [ADR-0013: Four-tier, bundle-oriented C# architecture](0013-four-tier-bundle-oriented-csharp-architecture.md)
+- [ADR-0013: Four-tier, bundle-oriented C# architecture](0013-four-tier-bundle-oriented-csharp-architecture.md) — "not T1" clause superseded by 0020
 - [ADR-0014: SurrealDB is the control-plane store](0014-surrealdb-is-the-control-plane-store.md)
 - [ADR-0015: Runtime contributions declare requirements, offer capabilities, and own their effects](0015-runtime-composition-requirements-offers-and-owned-effects.md)
 - [ADR-0016: A component revision is a presentation unit and a managed unit](0016-a-revision-is-a-presentation-unit-and-a-managed-unit.md) — extends 0013
 - [ADR-0017: Meaning and look are two orthogonal IRs that meet at binding ids](0017-two-orthogonal-ui-irs-meeting-at-binding-ids.md)
 - [ADR-0018: Agents edit UI models through a semantic service, never as files](0018-agents-edit-ui-models-through-a-service-not-as-files.md)
+- [ADR-0019: Contract vocabulary requires a consuming slice](0019-contract-vocabulary-requires-a-consuming-slice.md)
+- [ADR-0020: A provider may reference its service contract](0020-a-provider-may-reference-its-service-contract.md) — supersedes a clause of 0013
