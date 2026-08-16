@@ -52,7 +52,11 @@ working version.
 | **T3** | *implementation*, `[ServiceImplementation]` | collectible, unloadable | T1, T3 — **not T2** |
 | **T4** | *provider*, `[ServiceProvider]` | collectible, unloadable | T3, T4 — **not T1** |
 
-The reference rules are enforced by a Roslyn analyzer, not by convention. T2's
+The reference rules are enforced by a Roslyn analyzer, not by convention, and
+**tier membership comes from project metadata and role attributes — never from a
+project's name**. A corollary for naming generally: the folder already states the
+role, so `contracts/OrcBot.Contracts` and `plugins/OrcBot.Plugins.Sqlite` both say
+it twice. Name a project for the service it covers. T2's
 generated members forward through a per-call `ResolveService()`, which is what
 makes replacing a T3 implementation visible to resident callers on the next call
 without rebuilding them.
@@ -71,8 +75,12 @@ driven headless:
     --export-pack "<id> PCK" build/_artifacts/<version>/bundles/<id>.pck
 ```
 
-It contains `export_presets.cfg`, a junction to `project/bundles/`, and **nothing
-else** — no `.csproj`, no `.sln`, no scenes. Both prior attempts kept it that way.
+**`content-app` is never exported as an application.** It is a packer, and the
+only reason it is a Godot project at all is that `--export-pack` is the only way
+to produce a `.pck`. Its `export_presets.cfg` therefore defines *bundles*, not
+builds: `runnable=false`, `export_path=""`, one preset per bundle. It contains
+that file, a junction to `project/bundles/`, and **nothing else** — no `.csproj`,
+no `.sln`, no scenes. Both prior attempts kept it that way.
 Bundles are authored in `project/bundles/<id>/` as a sibling of `contracts/`,
 `libs/`, `plugins/`, and `hosts/`, and their staged build products are gitignored
 (ADR-0004, one level down; `Assert-NoTrackedDerivedState.ps1` learns the patterns).
