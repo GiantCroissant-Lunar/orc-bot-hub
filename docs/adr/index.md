@@ -23,3 +23,4 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0018: Agents edit UI models through a semantic service, never as files](0018-agents-edit-ui-models-through-a-service-not-as-files.md)
 - [ADR-0019: Contract vocabulary requires a consuming slice](0019-contract-vocabulary-requires-a-consuming-slice.md)
 - [ADR-0020: A provider may reference its service contract](0020-a-provider-may-reference-its-service-contract.md) — supersedes a clause of 0013
+- [ADR-0021: An agent session has two correlated channels, and a durable runner owns its stdio](0021-two-correlated-channels-and-a-durable-runner.md)
