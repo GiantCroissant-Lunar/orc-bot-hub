@@ -15,3 +15,4 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0010: Orca is scaffolding, and is retired plane by plane](0010-orca-is-scaffolding-not-a-dependency.md)
 - [ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client](0011-one-orc-binary-client-and-daemon.md) — superseded by 0012
 - [ADR-0012: The product is one exported Godot binary; headless is the daemon](0012-the-product-is-one-exported-godot-binary.md)
+- [ADR-0013: Four-tier, bundle-oriented C# architecture](0013-four-tier-bundle-oriented-csharp-architecture.md)
