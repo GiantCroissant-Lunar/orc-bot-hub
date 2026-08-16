@@ -112,11 +112,37 @@ four surfaces and they are not variants of each other:
 | **ACP client** | out | Orc Bot drives a worker agent | ACP / app-server / NDJSON |
 | **MCP client** | out | a worker gains tool capability | MCP, admitted into a loadout |
 
-The last one is the one that is easy to miss and easy to get wrong. When a
-JetBrains IDE exposes an MCP server, Orc Bot does not consume it. Orc Bot
-*admits* it into a worker's loadout, and the worker consumes it. Orc Bot gains no
-capability; the agent does, under Orc Bot's grant. Anything else turns the
-orchestrator into a tool user, which is a different product.
+The last one is the one that is easy to miss and easy to get wrong, and the
+2026-08-16 design session drew a line through it that the original wording did
+not: a JetBrains IDE exposing an MCP server is **two different things depending on
+which side of the IDE you stand on**, and the rule that held for tool use does
+not hold for retrieval.
+
+**Mutating IDE operations stay worker-only.** Rename, extract method, safe
+delete, reorganise namespaces. Orc Bot never calls them. The worker admits the
+MCP server into its loadout and consumes it; Orc Bot gains no capability, the
+agent does, under Orc Bot's grant. This is the original reading and it stands
+unchanged — anything else turns the orchestrator into a tool user, which is a
+different product. The boundary is the port, not a grant list: nothing above the
+plugin can even ask for a rename, so no policy has to refuse one.
+
+**Read-only code intelligence is a retrieval source.** `lint_files`,
+`get_symbol_info`, `get_class_hierarchy`, `search_symbol` arrive behind a typed
+port in the plugin, so the application surface never sees "MCP tools" — it sees a
+provider. MCP is the plugin's implementation detail exactly as HTTP is the
+implementation detail of the existing Mem0 memory provider. ADR-0001 already
+requires this shape of an adapter: one application surface, every ingress an
+adapter over it. Code intelligence becomes one more adapter behind that surface,
+not a special case.
+
+The guard that must be stated plainly: **code intelligence informs, never
+settles.** Validation stays with a build the orchestrator runs itself. The
+evidence for this arrived the same day the line was drawn — a JetBrains MCP
+server pins its solution model at launch, so after new projects were added it
+reported `{"problems":[],"totalCount":0}`, byte-identical to a genuinely clean
+repository. That is ADR-0003's "terminal output is never truth" applied to a tool
+that speaks JSON instead of ANSI, and it is why a retrieval source may never
+reach acceptance. A JSON body is not a build.
 
 ### Build order, and why
 
@@ -163,25 +189,40 @@ The default external-agent profile may submit, inspect, and comment. It may not
 accept, integrate, force-reset a slot, or release authority. Authorisation is at
 the application surface, so arriving over MCP grants nothing extra.
 
-**4. MCP client for tool endpoints — later, and only on demand.** It is the
-mechanism by which a worker gets IDE indexing, navigation, and refactoring. It
-does not make the bootstrap loop work, so it waits until a real task wants it.
+**4. MCP client for tool endpoints — pulled forward, and split.** It is the
+mechanism by which a worker gets IDE indexing, navigation, and refactoring. The
+original schedule put it "later, and only on demand". The 2026-08-16 line through
+Part 2 retires that ordering: retrieval-side code intelligence
+(`lint_files`, `get_symbol_info`, `get_class_hierarchy`, `search_symbol`) now
+schedules with the adapters that feed the application surface, because it is one
+of them, and a worker needs it the moment a real task asks "where is this
+symbol". Mutating IDE operations (rename, extract, safe delete) keep the
+"admitted into a worker's loadout" rule above and stay worker-only by
+construction — the plugin port does not surface them.
 
 **5. ACP server — not scheduled.** Orc Bot presenting *itself* as an agent to Zed
 or JetBrains Air is a genuine future, not a bootstrap need.
 
-### Where this refines ADR-0010
+### Where this resolves ADR-0010
 
-ADR-0010 treats Orca as scaffolding to retire. The endpoint taxonomy suggests a
-second reading: Orca is a legitimate **OrchestratorEndpoint** — a system that
-controls agents and worktrees, to which Orc Bot could permanently delegate a
-bounded sub-plan and reconcile the results.
+ADR-0010 treats Orca as scaffolding to retire. The endpoint taxonomy originally
+suggested a second reading: Orca as a legitimate **OrchestratorEndpoint** — a
+system that controls agents and worktrees, to which Orc Bot could permanently
+delegate a bounded sub-plan and reconcile the results.
 
-Both readings are live and S9 is laying out what would decide between them. They
-are not urgent to resolve, because the near-term work is identical either way:
-Orc Bot has to own its own attempts before it can meaningfully delegate any. What
-must not happen is drifting into the second reading by *default*, because nobody
-did the work for the first.
+**Resolved 2026-08-16: retired scaffold, which is ADR-0010's original reading.**
+Orca is in use only because Orc Bot cannot yet spawn agent CLIs itself. The
+reason is what makes the answer falsifiable rather than a preference: the day Orc
+Bot can launch, contain, and settle a worker on its own machine channel, the
+question stops being "do we keep Orca" and starts being "what would Orca do that
+Orc Bot cannot do itself", and the answer so far is nothing.
+
+The architectural consequence is the part that matters, and it constrains the
+AgentSession work in RFC-0006: **Orca must never shape the domain — only supply
+observations of it through an adapter.** Stage 6 below is "Orca is deleted". If
+the observation model were built around Orca's handles and dispatch ids, that
+stage would be a rewrite. Built adapter-first, it is removing a plugin with
+nothing above it changing.
 
 ---
 
@@ -247,7 +288,8 @@ stage.
 
 ## Open questions
 
-- Is Orca a retired scaffold or a permanent OrchestratorEndpoint? (S9)
+- ~~Is Orca a retired scaffold or a permanent OrchestratorEndpoint?~~ Resolved
+  2026-08-16: retired scaffold. See "Where this resolves ADR-0010" above.
 - Does `ZellijWorkingDirectoryGuard` still earn its place now that `--cwd` is
   confirmed working on 0.44.3? (W6)
 - Does the MCP server live inside `orc serve`, or as its own process? Inside is
