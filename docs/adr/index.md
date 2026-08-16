@@ -8,7 +8,7 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0003: Containment, semantics, and presentation are three independent planes](0003-three-independent-planes-per-attempt.md)
 - [ADR-0004: Derived state is never tracked, and expensive tools get authority slots](0004-derived-state-and-tool-authority-slots.md)
 - [ADR-0005: UnifyBuild, GitVersion, and one artifact root per commit](0005-build-versioning-and-artifact-layout.md)
-- [ADR-0006: Memory is scoped, untrusted recall — and it ships in v0](0006-memory-is-scoped-untrusted-recall.md)
+- [ADR-0006: Memory is scoped, untrusted recall — and it ships in v0](0006-memory-is-scoped-untrusted-recall.md) — storage clause superseded by 0014
 - [ADR-0007: Engineering concepts compile work; they do not execute it](0007-engineering-concepts-compile-they-do-not-execute.md)
 - [ADR-0008: The runtime is its own process; every UI is a client](0008-runtime-is-a-process-every-ui-is-a-client.md)
 - [ADR-0009: Seed engine caches per allocation; do not share them](0009-seed-engine-caches-do-not-share-them.md)
@@ -16,3 +16,4 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client](0011-one-orc-binary-client-and-daemon.md) — superseded by 0012
 - [ADR-0012: The product is one exported Godot binary; headless is the daemon](0012-the-product-is-one-exported-godot-binary.md)
 - [ADR-0013: Four-tier, bundle-oriented C# architecture](0013-four-tier-bundle-oriented-csharp-architecture.md)
+- [ADR-0014: SurrealDB is the control-plane store](0014-surrealdb-is-the-control-plane-store.md)
