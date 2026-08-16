@@ -9,3 +9,5 @@ What two abandoned attempts at this system taught us, recovered as evidenced fin
 - [S5 — Decisions, build tooling, and the shape of the failure](S5-decisions-and-shape-of-failure.md)
 - [S6 — reuse from `scarlet-projects`](S6-scarlet-reuse.md)
 - [S7 — How a "*-hub" repository actually works, and what orc-bot-hub should be](S7-doc-hub-pattern.md)
+- [S8 — fantasim bundles, service tiers, and package use](S8-fantasim-bundles-and-tiers.md)
+- [S9 — Organizing the JetBrains MCP discussion into a decision-ready endpoint taxonomy](S9-machine-controllable-endpoints.md)

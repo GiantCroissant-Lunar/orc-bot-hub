@@ -3,32 +3,52 @@
 This repository is the **public** documentation hub for Orc Bot. The
 implementation repository is private.
 
-## The one rule that matters
+## What this repository is
 
-**`docs/` is generated. Do not edit it here.**
+**The cross-attempt record.** Orc Bot has been restarted twice; this is the third
+attempt's implementation-independent documentation, and it is written to outlive
+it. If a fourth attempt is needed, this repository carries forward and the
+implementation tree does not.
 
-Every file under `docs/adr/`, `docs/rfc/`, and `docs/surveys/` is projected from
-the private orc-bot repository by its `tools/promote-docs.py`, which rewrites
-absolute local paths and internal commit identifiers on the way through. The
-projection is one-way and rebuilds those trees from scratch, so an edit made
-here is a fork that the next promotion silently overwrites.
+`docs/` is written **here**, directly. It is not generated and not mirrored — the
+private orc-bot repository keeps only notes specific to its Godot host.
 
-If something in `docs/` is wrong, fix it in orc-bot and re-promote. If you
-cannot reach orc-bot, open an issue here rather than editing the file.
+- `docs/adr/` — decisions. Once accepted, an ADR is not edited; it is superseded
+  by a later one, and both stay.
+- `docs/rfc/` — proposed slices of work, amended as evidence arrives, each
+  amendment citing the survey that caused it.
+- `docs/surveys/` — findings recovered from earlier attempts. Evidence, never
+  decisions.
+- `docs/discussion/` — raw design conversations. **Never cite one as a
+  decision**; if something in it matters, it graduates to an ADR or an RFC.
 
-What *is* editable here: `README.md`, this file, `mkdocs.yml`, `.github/`, and
-`.agent/`.
+`docs/index.md` and each section's `index.md` are the site's navigation. Update
+them when you add a document, because `mkdocs build --strict` fails on a page
+that nothing links to.
 
-## What is not published
+## The rule that keeps this repository publishable
 
-`docs/discussion/` exists in orc-bot and is never promoted, by any flag. It is
-unedited first-draft reasoning including arguments that were considered and
-dropped. If something in it should be public, it graduates into an ADR or an RFC
-first.
+This repository is public and its documents cite a private one. The natural way
+to cite evidence is an absolute path into somebody's D: drive — correct in
+private, a leak here.
 
-The promotion tool fails closed: if any absolute local path, home directory, or
-bare commit sha survives its rewrite rules, nothing is written at all. Do not
-weaken that gate to get a document out — add a rewrite rule, or fix the source.
+`tools/check-no-local-paths.py` runs as a pre-commit hook and again in the Pages
+workflow, and **refuses any absolute local path, home directory, or full commit
+sha**. Cite evidence as:
+
+```
+prior-attempt (2026-08-15) orc-bot/project/path/File.cs:123
+```
+
+The file and line are the useful part; the drive letter is not. A short sha is
+fine, a 40-character one is not. Do not weaken the check to get a document out.
+
+Install the hooks once:
+
+```bash
+pre-commit install --install-hooks
+pre-commit install --hook-type commit-msg
+```
 
 ## Agent resources
 
@@ -42,5 +62,5 @@ python tools/sync-agent-resources.py --prune
 ## Publishing
 
 `.github/workflows/docs.yml` builds the MkDocs site and deploys to GitHub Pages
-on push to `main`. Promotion produces a branch for review; only `main` publishes,
-so review is the gate and nothing reaches the public site unreviewed.
+on push to `main`. It re-runs the leak scan before building, so the gate exists
+whether or not someone installed the hooks.

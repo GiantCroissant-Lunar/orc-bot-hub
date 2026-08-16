@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      # This repository is public and its documents cite a private one. Without
+      # this, the natural way to cite evidence leaks a path on someone's machine.
+      - id: no-local-paths
+        name: no local absolute paths or full commit shas
+        entry: python tools/check-no-local-paths.py
+        language: system
+        types: [markdown]

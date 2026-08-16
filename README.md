@@ -48,10 +48,13 @@ more than the appearance of having had none.
 - A survey is evidence, never a decision. It may change an ADR, but only by
   someone writing that ADR.
 
-Absolute local paths and internal commit identifiers are rewritten on
-publication, so a citation reads `prior-attempt (2026-08-15) orc-bot/path:line`
-rather than a path on somebody's D: drive. The file and line are the useful part
-and they are preserved.
+Citations name a prior attempt and a file, not a path on somebody's machine:
+`prior-attempt (2026-08-15) orc-bot/path:line`. The file and line are the useful
+part. A pre-commit hook enforces it.
+
+`docs/discussion/` holds the raw design conversations these decisions came out
+of — unedited, including arguments that were considered and dropped. Useful for
+*why*; never cite one as a decision.
 
 ## Licence
 
