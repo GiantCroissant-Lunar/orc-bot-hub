@@ -9,7 +9,7 @@ The implementation is private. This is where the reasoning lives.
 
 - [Decisions](adr/) — 12 ADRs
 - [Proposed work](rfc/) — 2 RFCs
-- [Surveys](surveys/) — 7 documents
+- [Surveys](surveys/) — 8 documents
 
 These pages are generated from the private implementation repository.
 Absolute local paths and internal commit identifiers are rewritten on

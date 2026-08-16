@@ -66,6 +66,56 @@ them plugins forces the port boundary to be real rather than aspirational.
 | `complete-app` | hosts | Godot host shell; a client, never the CLI |
 | `OrcBot.Mcp` | hosts | MCP adapter (may start inside `orc serve`) |
 
+## What we consume rather than build
+
+S6 surveyed `scarlet-projects` against this RFC. Four packages replace work that
+was implicit here; the rest were rejected with reasons, which matters as much.
+
+**Adopt now:**
+
+| Package | Version | Replaces |
+| --- | --- | --- |
+| `GiantCroissant.PluginArchi.Extensibility.{Abstractions,Hosting.Abstractions,Hosting}` | 0.1.5 | the plugin host: discovery, collectible load contexts, lifecycle ordering, and a real unload probe |
+| `GiantCroissant.RegistryArchi.{Contracts,Core}` | 0.1.1 | provider/capability selection and owner-scoped cleanup (W5) |
+| `GiantCroissant.CrosscutFoundation.Config.{Contracts,Core,Env,Json,CommandLine}` | 0.3.1 | configuration for the daemon (W8) |
+| `GiantCroissant.UnifyBuild.Tool` | 0.1.28-1 | already adopted; stays out of the runtime dependency graph |
+
+PluginArchi's collectible unload is real behaviour, not an advertised interface:
+`IsolatedLoader` uses a collectible `AssemblyLoadContext` and
+`IPluginHostDiagnostics.RemoveGroupWithDiagnosticsAsync` returns a
+`PluginUnloadResult` whose weak-only `IsCollected(forceGc)` runs one bounded
+collection probe, with tests covering both a collectible group and a
+deliberately retained reference. Use reflection discovery in v0 — the source
+generator exists but the public builder hard-wires `ReflectionPluginDiscovery`
+and offers no discovery-selection method.
+
+**`OrcBot.Extensibility` stays, as a thin restricted profile over PluginArchi.**
+It is not deleted and not widened. PluginArchi's `IPluginContext` exposes an
+`IServiceProvider`; Orc Bot's `IOrcPluginContext` deliberately exposes only a
+per-plugin data directory and a log sink. Keeping the narrow contract is what
+stops a plugin treating the host as an ambient service locator, which is
+ADR-0001 and ADR-0002 policy, not taste. `[Plugin]` is sealed and cannot be
+derived from, so the adapter type carries both attributes and translates the
+context at that edge.
+
+**Rejected, with the reason:** DependencyArchi and ServiceArchi (would layer a
+second lifecycle model over PluginArchi's host, and duplicate RegistryArchi);
+CrosscutFoundation Logging (thinner than the standard library and does not cover
+the stdout/stderr and correlation invariants of ADR-0001); CrosscutFoundation
+Hosting/Messaging/Persistence (useful generics, but none meets ADR-0008's
+durable reconnectable authority and cursor requirements); GameFoundation,
+PlateShared generators, UnifySerialization/Storage, and the Unify geometry
+family (outside the v0 problem, or ineligible under the package-id rule).
+
+**Later:** CrosscutFoundation Diagnostics once a running daemon has operational
+consumers; UnifyEcs 0.1.14 only when the operator UI needs a derived projection,
+kept read-model-only and never operational truth.
+
+**W8 has no substitute.** The survey found no package on the enumerated public
+surfaces implementing the daemon/client boundary or a typed `{generation,
+sequence}` cursor. That is a verified absence, and it means the hardest item in
+this RFC stays ours.
+
 ## Work items
 
 Each is sized for one dispatched worker with a bounded, non-overlapping scope.
