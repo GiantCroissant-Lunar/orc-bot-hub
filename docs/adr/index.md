@@ -13,4 +13,5 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0008: The runtime is its own process; every UI is a client](0008-runtime-is-a-process-every-ui-is-a-client.md)
 - [ADR-0009: Seed engine caches per allocation; do not share them](0009-seed-engine-caches-do-not-share-them.md)
 - [ADR-0010: Orca is scaffolding, and is retired plane by plane](0010-orca-is-scaffolding-not-a-dependency.md)
-- [ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client](0011-one-orc-binary-client-and-daemon.md)
+- [ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client](0011-one-orc-binary-client-and-daemon.md) — superseded by 0012
+- [ADR-0012: The product is one exported Godot binary; headless is the daemon](0012-the-product-is-one-exported-godot-binary.md)

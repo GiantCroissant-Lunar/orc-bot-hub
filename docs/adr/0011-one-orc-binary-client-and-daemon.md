@@ -1,6 +1,6 @@
 # ADR-0011: One `orc` binary is both client and daemon; the Godot host is a third client
 
-- Status: Accepted
+- Status: **Superseded by [ADR-0012](0012-the-product-is-one-exported-godot-binary.md)**
 - Date: 2026-08-16
 - Refines: ADR-0008
 - Related: ADR-0001, ADR-0005
