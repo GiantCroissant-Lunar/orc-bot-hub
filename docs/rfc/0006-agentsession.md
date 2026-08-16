@@ -4,7 +4,8 @@
 - Date: 2026-08-16
 - Depends on: ADR-0001, ADR-0003, ADR-0008, ADR-0010, ADR-0011
 - Informed by: RFC-0003 (its 2026-08-16 amendments), the JetBrains MCP
-  solution-model pinning observed the same day
+  solution-model pinning observed the same day, the three-worker cost wave
+  measured the same day
 
 ## The problem
 
@@ -36,7 +37,7 @@ how a derived number goes quietly wrong — two sources of truth, one rounding
 direction each, and the gap is where the gaming RFC-0003 already warns against
 lives. One list, one denominator, no reconciliation.
 
-## Four sources, mapping onto the planes
+## Five sources, mapping onto the planes
 
 | Plane | Source | What it contributes |
 | --- | --- | --- |
@@ -44,13 +45,14 @@ lives. One list, one denominator, no reconciliation.
 | semantics | ACP / app-server attach | first-hand typed events, where capability allows |
 | provenance | orchestrator adapter | metadata only, never truth about progress |
 | presentation | terminal | a human can look and type |
+| consumption | a usage reader | tokens and, where knowable, money |
 
 The process table is the denominator because it is the one source that cannot
 lie about whether a session is running. ACP can miss a session that was
 launched without it; an orchestrator adapter can only report what it
-dispatched; a terminal can be closed without the session ending. The process
-table is what makes "unattributed" a first-class value rather than a hole in
-the model.
+dispatched; a terminal can be closed without the session ending; a usage
+reader only sees sessions that wrote logs. The process table is what makes
+"unattributed" a first-class value rather than a hole in the model.
 
 ## ACP is what makes orchestrator-agnostic actually work
 
@@ -113,6 +115,66 @@ server that reported `{"problems":[],"totalCount":0}` against a stale
 solution model is the same failure shape as an ACP event stream that reports
 `turn_complete` against a diff that does not compile — both are the tool
 speaking its own truth, neither is Orc Bot's.
+
+## Consumption, the fifth source
+
+The reader in question is `ccusage`, which auto-detects many agent CLIs
+(Claude, Codex, OpenCode, Kilo, Gemini, Copilot and others) and groups usage
+by day, week, month, and **session**. Session is the important one: it is the
+join key onto an `AgentSession`, which is what makes the rest of this
+possible.
+
+The payoff is not a cost dashboard. It is **cost attributed to outcomes**.
+A usage reader gives cost per session; `AgentSession` gives session to task
+to candidate. Joined, Orc Bot can say what a *candidate* cost. Without the
+provenance link the number is untethered, which is precisely why this is the
+same RFC and not a separate one — the join is the point, and the join lives
+on the session id that this RFC already needs.
+
+Measured on 2026-08-16, one wave of three workers on this project:
+
+- one delivered a verified provider with passing tests, for $8.85
+- one delivered two accepted deliverables, for $16.20
+- one produced nothing at all, and displayed $0.00
+
+### The invariant: measured zero and unmeasurable are not the same value
+
+The third worker was billed through a flat-rate plan, so it has no per-token
+price. It still consumed 3.4 million tokens and nine minutes. Rendered
+naively, the most wasteful worker of the wave ranks as the cheapest.
+
+**Measured zero and unmeasurable must never be the same value.** This is a
+requirement on the source, not a preference in the renderer. It is the same
+shape the project hit four times in one day: a stale IDE analyser reporting
+zero problems (RFC-0003), an incremental build reporting zero warnings, an
+unavailable memory provider returning an empty result (RFC-0004), and now a
+flat-rate agent reporting zero cost. In every case an absent measurement was
+indistinguishable from a good one. The vocabulary separates the cases in the
+type — `Zero` against a measured scale, `Unmeasured` against a missing one —
+rather than leaving it to whoever renders the number, because the renderer is
+exactly where the pressure to show a clean figure lands.
+
+### Two limits, recorded honestly
+
+- **A usage reader reads local log files.** A worker running on a remote
+  host produces no data locally, which is another `Unmeasured`, not a zero.
+  The same shape as a session whose provider has no joinable runtime: a
+  session that is real, that consumed tokens somewhere, and that this source
+  cannot see.
+- **It is a third-party tool with its own output format.** It belongs behind
+  a typed port exactly as the memory provider and the code-intelligence
+  provider do, and its version belongs in the record because it parses
+  someone else's format. A silent format change is the same failure as the
+  JetBrains solution model pinned at launch: the tool keeps speaking, the
+  meaning drifts, and nobody above the adapter is told.
+
+### The rule that keeps it honest
+
+Consumption informs; it settles nothing. A cheap attempt is not a good one
+and an expensive attempt is not a failed one. Nothing here may gate
+acceptance — same status as retrieved memory and observed code intelligence.
+Cost joined to a candidate tells you what it took to get there; it does not
+tell you whether "there" is where the work should have gone.
 
 ## A consequence for the sibling repository
 
