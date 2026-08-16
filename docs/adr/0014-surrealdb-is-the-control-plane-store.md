@@ -52,8 +52,11 @@ not a stylistic preference, it is the mitigation for a live defect.
 
 ## The defect that drove the original move is not fixed
 
-Retested directly on **SurrealDB 3.2.3** (`3.2.3+20260721.40522d1`), 2026-08-16,
-on a server started **without** `--strict`:
+Retested 2026-08-16 on **both** transports this project could use, because a
+result on one proves nothing about the other.
+
+**Standalone server, SurrealDB 3.2.3** (`3.2.3+20260721.40522d1`) over HTTP
+`/sql`, started **without** `--strict`:
 
 | Query | Result |
 | --- | --- |
@@ -62,15 +65,41 @@ on a server started **without** `--strict`:
 | `SELECT * FROM table_b` (never written) | **ERR — "The table 'table_b' does not exist"** |
 | `SELECT count() FROM table_c GROUP ALL` | **ERR** |
 
-This is the same behaviour the first attempt hit, three weeks later, on the
-current engine: a read against a never-written table errors instead of returning
-an empty set, so a fresh store fails its first read.
+**Embedded SurrealKV** via `SurrealDb.Net` 1.0.0 + `SurrealDb.Embedded.SurrealKv`
+1.0.0 on net8.0: identical — `NotFound`, *"The table 'never_written' does not
+exist"*.
 
-The mitigation is bounded and was verified in the same session. After
-`DEFINE TABLE IF NOT EXISTS memory_record SCHEMALESS`, the same reads return `[]`
-and `[{"count": 0}]`. So the defect converts into a **schema-bootstrap step at
-store-open**: every table the control plane reads must be defined when the store
-is opened, not created implicitly by the first write.
+So this is the same behaviour the first attempt hit, three weeks later, on the
+current engine, on both paths. A fresh store fails its first read.
+
+The mitigation is bounded and was verified on both. After
+`DEFINE TABLE IF NOT EXISTS memory_record SCHEMALESS`, the server returns `[]`
+and `[{"count": 0}]`, and the embedded client returns `OK, 0 rows`. The defect
+converts into a **schema-bootstrap step at store-open**: every table the control
+plane reads must be defined when the store is opened, not created implicitly by
+the first write.
+
+**The sharper hazard is how the failure is delivered.** On the embedded client
+the failed read does **not** throw. `RawQuery` returns normally and the error is
+carried *inside* the response, on `HasErrors` / `FirstError`. An adapter written
+the obvious way — `try { await RawQuery(...) } catch { ... }` — sees no
+exception, reads zero rows, and reports an empty successful retrieval. That is
+precisely the failure S3 records against the previous Mem0 work: *"reported
+absent credentials, unreachable service, and timeouts as unavailable rather than
+fabricating an empty successful capability."* A store that fabricates the same
+thing is worse, because memory recall failing open looks exactly like a project
+with nothing yet to remember.
+
+Therefore, in `OrcBot.Persistence.Surreal`, **every** query result must be
+checked for `HasErrors` before its rows are read, and a `NotFound` on a table the
+bootstrap should have defined is a fault, not an empty set. This is a code
+requirement, not a style preference, and it is the single most likely way this
+decision goes wrong quietly.
+
+One incidental finding: the embedded engine returns CBOR, so
+`GetValues<JsonElement>()` fails and typed models are required. It also rejects
+`function::version()` as a parse error, so engine version cannot be probed that
+way.
 
 That step is mandatory. A table added later in code but not added to the
 bootstrap is a read that fails only on a fresh clone — green on every developer
@@ -85,9 +114,15 @@ table.
   needs one.
 - **A startup schema step is now load-bearing**, with the fresh-store test above
   as its guard.
-- **The SDK is young and the versions are skewed.** The server here is 3.2.3
-  while `SurrealDb.Net` is 1.0.0; that pairing is unverified and must be proven
-  before the persistence provider is relied on.
+- **The SDK is young and its 1.0.0 surface is not the one the docs describe.**
+  Verified by spike: `AddSurreal` takes a connection string
+  (`Endpoint=...;Namespace=...;Database=...`), not a bare endpoint; the embedded
+  provider must be registered with `AddSurrealKvProvider()`; the resolved service
+  is a **scoped `ISurrealDbSession`**, not `ISurrealDbClient`; it is
+  `IAsyncDisposable` only; and the namespace from the connection string is *not*
+  applied to the session — an explicit `Use(ns, db)` is required or every
+  statement fails with "Specify a namespace to use". None of this is hard, but
+  all of it is undocumented surface that a future upgrade can move.
 - **Graph traversal is bought before it is needed.** RFC-0001's task DAGs and
   ADR-0007's typed plan edges are the plausible future use; none exists yet, so
   this is an option purchased, not a requirement met.
