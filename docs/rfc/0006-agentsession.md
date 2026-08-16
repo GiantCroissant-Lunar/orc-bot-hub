@@ -207,3 +207,23 @@ binding.
   for a field; the fact that more than one orchestrator could launch sessions
   on the same machine argues for a port. Decide when a second orchestrator
   actually exists.
+- **Does the model generalise beyond agent CLIs?** Deliberately deferred, not
+  an oversight. The planes this RFC uses — containment, semantics, provenance,
+  consumption, presentation — are not specific to agent CLIs, and the same
+  shape plausibly covers any worker acting on the repository: a CI run, a
+  scheduled automation, a build or export, a human. Generalising would mostly
+  be a rename, since `Attempt` is already a subset of the session concept
+  either way, and provenance already treats `Unknown` as a first-class
+  launcher — a human at a keyboard is as legitimate a row as a dispatched
+  worker. The one part that does not generalise unchanged is **semantics**:
+  an agent CLI offers a machine channel (ACP, app-server, NDJSON), whereas a
+  CI run offers an exit status and logs. That is a real difference in kind,
+  not a rename, but it is a difference the plane already accommodates:
+  `AgentProviderCapabilities.SupportsJoinableSession` exists precisely
+  because not every provider speaks the same channel, and a CI run is the
+  limiting case of "no joinable runtime, completion asserted from process
+  exit" that the capability was written to express. The reason this is cheap
+  to defer: nothing in the current model has to be unbuilt to get there. The
+  rename can happen when a non-agent worker is first observed, and the
+  semantics plane already has the vocabulary for a worker that contributes
+  nothing to it.
