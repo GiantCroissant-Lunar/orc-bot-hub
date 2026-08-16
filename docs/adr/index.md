@@ -24,3 +24,4 @@ Architectural decisions. Once accepted, an ADR is not edited — it is supersede
 - [ADR-0019: Contract vocabulary requires a consuming slice](0019-contract-vocabulary-requires-a-consuming-slice.md)
 - [ADR-0020: A provider may reference its service contract](0020-a-provider-may-reference-its-service-contract.md) — supersedes a clause of 0013
 - [ADR-0021: An agent session has two correlated channels, and a durable runner owns its stdio](0021-two-correlated-channels-and-a-durable-runner.md)
+- [ADR-0022: Activity is one attributed stream, and its UI splits by feature then by load tier](0022-activity-is-one-attributed-stream.md)
