@@ -1,0 +1,19 @@
+# Cross-CLI deployment target via the open Agent Skills spec.
+# Read natively by Codex, Copilot, OpenCode, and Kilo; read by Claude Code
+# through the Agent Skills compatibility layer.
+#
+# No skills yet -- this hub has no workflow of its own beyond "do not edit
+# docs/". Add one here when it does.
+
+tool: agents
+display_name: Cross-CLI (.agents/ standard)
+
+skills:
+  target: .agents/skills
+  strategy: symlink
+  local: []
+
+mcp:
+  enabled: false
+hooks:
+  enabled: false

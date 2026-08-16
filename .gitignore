@@ -1,0 +1,19 @@
+# Generated agent-resource surfaces (regenerate with tools/sync-agent-resources.py)
+.agents/
+.claude/
+.codex/
+.kiro/
+CLAUDE.md
+GEMINI.md
+
+# mkdocs build output
+site/
+
+# Agent / tool scratch
+.omo/
+.codegraph/
+__pycache__/
+
+# OS
+Thumbs.db
+.DS_Store

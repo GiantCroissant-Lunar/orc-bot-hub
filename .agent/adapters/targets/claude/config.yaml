@@ -1,0 +1,16 @@
+# Claude Code compatibility target.
+# AGENTS.md is the tracked canonical rules file; only this thin import shim is
+# generated, so the pointer cannot drift from what it points at.
+
+tool: claude
+display_name: Claude Code
+
+rules:
+  strategy: import
+  target: CLAUDE.md
+  source: AGENTS.md
+
+mcp:
+  enabled: false
+hooks:
+  enabled: false
